@@ -25,6 +25,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 app.use("/api/admin", adminRoutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/customers", customerRoutes);
-app.listen(PORT, () => {
-    console.log(chalk.blue("Server is running on http://localhost:" + PORT));
-});
+
+if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+        console.log(chalk.blue("Server is running on http://localhost:" + PORT));
+    });
+}
+
+export default app;
