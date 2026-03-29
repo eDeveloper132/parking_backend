@@ -25,8 +25,9 @@ The project follows a modular **Routes-Controllers-Services-Models (RCSM)** arch
 - `schemas/`:
   - `models/`: Mongoose model definitions.
   - `types/`: TypeScript interface/type definitions for data structures.
-- `middlewares/`: Custom Express middlewares (e.g., authentication, role-based access).
-- `config/`: Configuration files like database connection logic.
+- `middlewares/`: Custom Express middlewares (e.g., `auth-middleware.mts` for authentication and role-based access).
+- `config/`: Configuration files like `db.mts` for database connection logic.
+- `ROUTES.md`: Detailed API documentation for all endpoints, request bodies, and authentication requirements.
 
 ## Building and Running
 
@@ -39,6 +40,12 @@ The project follows a modular **Routes-Controllers-Services-Models (RCSM)** arch
 - **Install Dependencies:** `npm install`
 - **Build and Start:** `npm run start` (transpiles TS and runs the server)
 - **Development Mode:** `npm run serve` (uses `nodemon` for auto-restarts)
+
+## Deployment
+
+The project is configured for deployment on **Vercel**.
+- `vercel.json`: Configuration for Vercel deployment, including routing all requests to the `index.mts` entry point.
+- The `NODE_ENV` environment variable is used to determine whether to start a local listener.
 
 ## Development Conventions
 
