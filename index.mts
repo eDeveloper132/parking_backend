@@ -26,10 +26,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/customers", customerRoutes);
 
-app.use("*", (req: Request, res: Response) => {
-    res.status(404).json({ success: false, message: "Route not found" });
-});
-
 if (process.env.NODE_ENV !== "production") {
     app.listen(PORT, () => {
         console.log(chalk.blue("Server is running on http://localhost:" + PORT));
