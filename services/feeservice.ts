@@ -12,32 +12,58 @@ import expressAsyncHandler from "express-async-handler";
 export async function createFee(payload: Partial<IFee>) {
   const { customerId, month, year, amount, paymentDate, paymentMethod, paymentStatus } = payload;
   if (!customerId || !month || !year || amount == null || !paymentDate || !paymentMethod || !paymentStatus) {
-    throw new Error("Missing required fee fields");
+    return {
+      message: "Missing required fields: customerId, month, year, amount, paymentDate, paymentMethod, paymentStatus, notes (optional)"
+    };
   }
-  if (!Types.ObjectId.isValid(String(customerId))) throw new Error("Invalid customer id");
+  if (!Types.ObjectId.isValid(String(customerId))) {
+    return {
+      message: "Invalid customer id"
+    };
+  }
   const customer = await CustomerModel.findById(customerId);
-  if (!customer) throw new Error("Customer not found");
+  if (!customer) {
+    return {
+      message: "Customer not found"
+    };
+  };
 
   // rely on unique index — but we can check first to throw friendlier message
   const exists = await FeeModel.findOne({ customerId, month, year }).lean();
-  if (exists) throw new Error("Fee record for this customer/month/year already exists");
+  if (exists) {
+    return {
+      message: `Fee already exists in record for this ${customerId}/${month}/${year}`
+    };
+  };
 
   return FeeModel.create(payload);
 }
 
 export async function updateFee(id: string, changes: Partial<IFee>) {
   const fee = await FeeModel.findByIdAndUpdate(id, changes, { new: true }).lean();
-  if (!fee) throw new Error("Fee not found");
+  if (!fee) {
+    return {
+      message: "Fee not found"
+    };
+  };
   return fee;
 }
 
 export async function getFeeById(id: string) {
-  if (!Types.ObjectId.isValid(id)) throw new Error("Invalid id");
+  if (!Types.ObjectId.isValid(id)) {
+    return {
+      message: "Invalid id"
+    };
+  };
   return FeeModel.findById(id).populate("customerId").lean();
 }
 
 export async function listFeesForCustomer(customerId: string) {
-  if (!Types.ObjectId.isValid(customerId)) throw new Error("Invalid customer id");
+  if (!Types.ObjectId.isValid(customerId)) {
+    return {
+      message: "Invalid customer id"
+    };
+  };
   return FeeModel.find({ customerId }).sort({ year: -1, month: -1 }).lean();
 }
 
@@ -57,7 +83,11 @@ export async function markFeePaid(feeId: string, paymentMethod: IFee["paymentMet
   const update: any = { paymentStatus: "paid", paymentDate, paymentMethod };
   if (amount !== undefined) update.amount = amount;
   const fee = await FeeModel.findByIdAndUpdate(feeId, update, { new: true }).lean();
-  if (!fee) throw new Error("Fee not found");
+  if (!fee) {
+    return {
+      message: "Fee not found"
+    };
+  };
   return fee;
 }
 

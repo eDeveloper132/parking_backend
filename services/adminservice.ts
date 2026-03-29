@@ -11,10 +11,16 @@ const JWT_EXPIRES = "7d";
 export async function createAdmin(payload: Partial<IAdmin>) {
   const { name, email, password, mobile, role } = payload;
   if (!name || !email || !password || !role || !mobile) {
-    throw new Error("Missing required admin fields");
+    return {
+      message: "Missing required admin fields: name, email, password, role, mobile is optional"
+    };
   }
   const exists = await AdminModel.findOne({ email }).lean();
-  if (exists) throw new Error("Admin with this email already exists");
+  if (exists){
+    return {
+      message: "Admin with this email already exists"
+    }
+  }
 
   const hashed = await bcrypt.hash(password, SALT_ROUNDS);
   const admin = await AdminModel.create({
@@ -27,27 +33,50 @@ export async function createAdmin(payload: Partial<IAdmin>) {
 
 export async function authenticateAdmin(email: string, plainPassword: string) {
   const admin = await AdminModel.findOne({ email });
-  if (!admin) throw new Error("Invalid credentials");
+  if (!admin){
+    return {
+      message: "Invalid Email or password."
+    };
+  }
   const match = await bcrypt.compare(plainPassword, admin.password);
-  if (!match) throw new Error("Invalid credentials");
+  if (!match) {
+    return {
+      message: "password is not matched"
+    };
+  }
   const token = jwt.sign({ id: admin._id, role: admin.role, email: admin.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
   const { password: _p, ...rest } = admin.toObject();
   return { admin: rest, token };
 }
 
 export async function getAdminById(id: string) {
-  return AdminModel.findById(id).select("-password").lean();
+  const admin = await AdminModel.findById(id).select("-password").lean();
+  if (!admin){
+    return {
+      message: "Admin not found"
+    };
+  };
+  return admin;
 }
-
 export async function updateAdmin(id: string, changes: Partial<IAdmin>) {
   if (changes.password) {
     changes.password = await bcrypt.hash(changes.password, SALT_ROUNDS);
   }
   const admin = await AdminModel.findByIdAndUpdate(id, changes, { new: true }).select("-password").lean();
-  if (!admin) throw new Error("Admin not found");
+  if (!admin){
+    return {
+      message: "Admin not found"
+    };
+  };
   return admin;
 }
 
 export async function deleteAdmin(id: string) {
-  return AdminModel.findByIdAndDelete(id).lean();
+  const admin = await AdminModel.findByIdAndDelete(id).lean();
+  if (!admin){
+    return {
+      message: "Admin not found"
+    };
+  };
+  return admin;
 }

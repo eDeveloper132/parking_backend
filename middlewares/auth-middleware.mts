@@ -19,8 +19,8 @@ export function requireAuth(req: Request & { user?: any }, res: Response, next: 
 export function requireRole(...roles: string[]) {
   return (req: Request & { user?: any }, res: Response, next: NextFunction) => {
     const user = req.user;
-    if (!user) return res.status(401).json({ success: false, message: "Not authenticated" });
-    if (!roles.includes(user.role)) return res.status(403).json({ success: false, message: "Forbidden: insufficient role" });
+    if (!user) return res.status(401).json({ success: false, message: "This account is not authenticated/authorized or registered" });
+    if (!roles.includes(user.role)) return res.status(403).json({ success: false, message: "Forbidden: insufficient role, please add a role in this request" });
     next();
   };
 }

@@ -6,27 +6,46 @@ import { CustomerModel } from "../schemas/models/customer.js";
 export async function createCustomer(payload: Partial<ICustomer>) {
   // Basic validations
   if (!payload.ownerName || !payload.mobileNumber || !payload.bikeNumber || !payload.bikeModel || !payload.entryDate) {
-    throw new Error("Missing required customer fields");
+    return {
+      message: "Missing required fields: ownerName, mobileNumber, bikeNumber, bikeModel, entryDate, cnic (optional), address (optional), notes (optional)",
+    };
   }
   // Optionally ensure unique bikeNumber
   const exists = await CustomerModel.findOne({ bikeNumber: payload.bikeNumber }).lean();
-  if (exists) throw new Error("A customer with this bike number already exists");
+  if (exists){
+    return {
+      message: "Customer with this bikeNumber already exists"
+    };
+  };
 
   return CustomerModel.create(payload);
 }
 
 export async function updateCustomer(id: string, changes: Partial<ICustomer>) {
   const updated = await CustomerModel.findByIdAndUpdate(id, changes, { new: true }).lean();
-  if (!updated) throw new Error("Customer not found");
+  if (!updated){
+    return {
+      message: "Customer not found"
+    };
+  };
   return updated;
 }
 
 export async function getCustomerById(id: string) {
-  if (!Types.ObjectId.isValid(id)) throw new Error("Invalid id");
+  if (!Types.ObjectId.isValid(id)) {
+    return {
+      message: "Invalid id"
+    };
+  };
   return CustomerModel.findById(id).lean();
 }
 
 export async function deleteCustomer(id: string) {
+  if (!Types.ObjectId.isValid(id)) {
+    return {
+      message: "Invalid id"
+    };
+  };
   return CustomerModel.findByIdAndDelete(id).lean();
 }
 
