@@ -50,6 +50,12 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     message = "Not authorized, token expired";
   }
 
+  // Handle Mongoose Connection Errors
+  if (err.name === "MongooseServerSelectionError" || err.name === "MongoNetworkError") {
+    statusCode = 503;
+    message = "Database connection error: Please check if your IP is whitelisted in MongoDB Atlas";
+  }
+
   res.status(statusCode).json({
     message: message,
     ...(process.env.NODE_ENV === "development" && { stack: err.stack }),

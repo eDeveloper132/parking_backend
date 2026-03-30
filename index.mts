@@ -15,7 +15,12 @@ const PORT = parseInt(process.env.PORT || "2500", 10);
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-connectDB();
+
+// Database connection with handling
+connectDB().catch((err) => {
+    console.error(chalk.red("Failed to connect to MongoDB:"), err.message);
+});
+
 app.get("/", (req: Request, res: Response) => {
     res.json({ message: "Welcome to the Bike Parking Management Server!" });
 });

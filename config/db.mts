@@ -10,6 +10,6 @@ export const connectDB = async () => {
     console.log('MongoDB connected successfully');
   } catch (err) {
     console.error('MongoDB connection error:', err);
-    // Do not call process.exit(1) in a serverless environment
+    throw err; // Re-throw to be handled by the application
   }
 };
