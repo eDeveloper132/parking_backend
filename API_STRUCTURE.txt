@@ -1,0 +1,143 @@
+# Bike Parking Management Server - API Structure & Research Report
+
+This document provides a comprehensive overview of the API architecture, request requirements, response formats, and error handling mechanisms.
+
+---
+
+## 1. Global Response Standards
+
+Following a system-wide update, all API responses (Success or Failure) are guaranteed to contain a `message` key at the root of the JSON object.
+
+### Success Response Format
+- **HTTP Status:** 200 OK or 201 Created
+- **Structure:**
+```json
+{
+  "message": "Descriptive success message",
+  "data_key": { ... } // e.g., "admin", "customer", "fee", "items"
+}
+```
+
+### Unsuccess (Error) Response Format
+- **HTTP Status:** 4xx (Client Error) or 5xx (Server Error)
+- **Structure:**
+```json
+{
+  "message": "Detailed error message explaining the failure"
+}
+```
+
+---
+
+## 2. Error Handling & Research
+
+The software implements a centralized error handling middleware that captures and formats all potential exceptions.
+
+### Handled Error Types:
+1.  **Validation Errors (400 Bad Request):** Triggered when required fields are missing or data types/enums are invalid.
+2.  **Duplicate Key Errors (400 Bad Request):** Triggered when attempting to create a record with an existing unique field (e.g., Email for Admin, Bike Number for Customer, or same Month/Year fee for a Customer).
+3.  **Authentication Errors (401 Unauthorized):**
+    - Missing `Authorization` header or token.
+    - Invalid or malformed JWT.
+    - Expired JWT.
+4.  **Authorization Errors (403 Forbidden):** Authenticated user lacks the required role (e.g., Manager trying to access Admin-only delete routes).
+5.  **Not Found Errors (404 Not Found):**
+    - Invalid Resource IDs (Mongoose CastError).
+    - Resource does not exist in the database.
+    - Hitting an undefined route.
+6.  **Database Connection Errors (503 Service Unavailable):** Specifically handles MongoDB Atlas IP whitelisting issues with a clear instructional message.
+7.  **Server Errors (500 Internal Server Error):** Catch-all for unexpected code crashes or unhandled rejections.
+
+---
+
+## 3. API Endpoints Research
+
+### A. Admin & Auth (`/api/admin`)
+
+#### 1. Register Admin
+- **Method:** `POST`
+- **Path:** `/api/admin/register`
+- **Auth:** Public
+- **Success Requirements:** Provide all fields: `name`, `email`, `password`, `mobile` (optional but recommended), and `role` ('admin'|'manager').
+- **Failure Reasons:** Missing fields, email already exists, invalid role.
+
+#### 2. Login Admin
+- **Method:** `POST`
+- **Path:** `/api/admin/login`
+- **Auth:** Public
+- **Success Requirements:** Correct `email` and `password`.
+- **Failure Reasons:** Incorrect email/password, missing fields.
+- **Data Returned:** Admin object and JWT `token`.
+
+#### 3. Delete Admin
+- **Method:** `DELETE`
+- **Path:** `/api/admin/:id`
+- **Auth:** Required (Role: `admin`)
+- **Success Requirements:** Valid Admin ID in URL.
+- **Failure Reasons:** Admin not found, insufficient permissions, invalid ID.
+
+### B. Customer Management (`/api/customers`)
+
+#### 1. Create Customer
+- **Method:** `POST`
+- **Path:** `/api/customers`
+- **Auth:** Required (Role: `admin` or `manager`)
+- **Success Requirements:** Required fields: `ownerName`, `fatherName`, `mobileNumber`, `bikeNumber` (unique), `bikeModel`, `entryDate`, `status` ('active'|'inactive').
+- **Failure Reasons:** Missing fields, duplicate `bikeNumber`, invalid status enum.
+
+#### 2. Get Single Customer
+- **Method:** `GET`
+- **Path:** `/api/customers/:id`
+- **Auth:** Public
+- **Success Requirements:** Valid Customer ID.
+- **Failure Reasons:** Customer not found.
+
+#### 3. Search/List Customers
+- **Method:** `GET`
+- **Path:** `/api/customers`
+- **Auth:** Public
+- **Query Params:** `q` (search term), `page`, `limit`.
+- **Data Returned:** Paginated list of customers (`items`, `total`, `pages`).
+
+#### 4. Update Customer
+- **Method:** `PUT`
+- **Path:** `/api/customers/:id`
+- **Auth:** Public
+- **Success Requirements:** Valid ID, provide fields to update.
+- **Failure Reasons:** Customer not found, invalid data types.
+
+#### 5. Delete Customer
+- **Method:** `DELETE`
+- **Path:** `/api/customers/:id`
+- **Auth:** Required (Role: `admin`)
+
+### C. Fee Management (`/api/fees`)
+
+#### 1. Create Fee Record
+- **Method:** `POST`
+- **Path:** `/api/fees`
+- **Auth:** Public
+- **Success Requirements:** `customerId`, `month` (lowercase name), `year`, `amount`, `paymentDate`, `paymentStatus` ('paid'|'unpaid'), `paymentMethod` ('cash'|'online').
+- **Failure Reasons:** Missing fields, Customer not found, Duplicate fee for same month/year, invalid enum values.
+
+#### 2. Mark Fee as Paid
+- **Method:** `PUT`
+- **Path:** `/api/fees/:id/pay`
+- **Auth:** Public
+- **Body Params:** `paymentMethod`, `paymentDate` (optional), `amount` (optional).
+- **Success Requirements:** Valid Fee ID.
+
+#### 3. Monthly Report
+- **Method:** `GET`
+- **Path:** `/api/fees/reports/monthly/:month/:year`
+- **Auth:** Public
+- **Success Requirements:** Valid `month` name and `year` number.
+- **Data Returned:** Summary of paid/unpaid counts and total amounts.
+
+#### 4. Delete Fee Record
+- **Method:** `DELETE`
+- **Path:** `/api/fees/:id`
+- **Auth:** Required (Role: `admin`)
+
+---
+**End of Report**
