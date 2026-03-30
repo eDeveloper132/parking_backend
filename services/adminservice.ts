@@ -11,15 +11,11 @@ const JWT_EXPIRES = "7d";
 export async function createAdmin(payload: Partial<IAdmin>) {
   const { name, email, password, mobile, role } = payload;
   if (!name || !email || !password || !role || !mobile) {
-    return {
-      message: "Missing required admin fields: name, email, password, role, mobile is optional"
-    };
+    throw new Error("Missing required admin fields: name, email, password, role, mobile is optional");
   }
   const exists = await AdminModel.findOne({ email }).lean();
   if (exists){
-    return {
-      message: "Admin with this email already exists"
-    }
+    throw new Error("Admin with this email already exists");
   }
 
   const hashed = await bcrypt.hash(password, SALT_ROUNDS);
@@ -34,15 +30,11 @@ export async function createAdmin(payload: Partial<IAdmin>) {
 export async function authenticateAdmin(email: string, plainPassword: string) {
   const admin = await AdminModel.findOne({ email });
   if (!admin){
-    return {
-      message: "Invalid Email or password."
-    };
+    throw new Error("Invalid Email or password.");
   }
   const match = await bcrypt.compare(plainPassword, admin.password);
   if (!match) {
-    return {
-      message: "password is not matched"
-    };
+    throw new Error("password is not matched");
   }
   const token = jwt.sign({ id: admin._id, role: admin.role, email: admin.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
   const { password: _p, ...rest } = admin.toObject();
@@ -52,9 +44,7 @@ export async function authenticateAdmin(email: string, plainPassword: string) {
 export async function getAdminById(id: string) {
   const admin = await AdminModel.findById(id).select("-password").lean();
   if (!admin){
-    return {
-      message: "Admin not found"
-    };
+    throw new Error("Admin not found");
   };
   return admin;
 }
@@ -64,9 +54,7 @@ export async function updateAdmin(id: string, changes: Partial<IAdmin>) {
   }
   const admin = await AdminModel.findByIdAndUpdate(id, changes, { new: true }).select("-password").lean();
   if (!admin){
-    return {
-      message: "Admin not found"
-    };
+    throw new Error("Admin not found");
   };
   return admin;
 }
@@ -74,9 +62,7 @@ export async function updateAdmin(id: string, changes: Partial<IAdmin>) {
 export async function deleteAdmin(id: string) {
   const admin = await AdminModel.findByIdAndDelete(id).lean();
   if (!admin){
-    return {
-      message: "Admin not found"
-    };
+    throw new Error("Admin not found");
   };
   return admin;
 }

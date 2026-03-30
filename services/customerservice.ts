@@ -6,16 +6,12 @@ import { CustomerModel } from "../schemas/models/customer.js";
 export async function createCustomer(payload: Partial<ICustomer>) {
   // Basic validations
   if (!payload.ownerName || !payload.mobileNumber || !payload.bikeNumber || !payload.bikeModel || !payload.entryDate) {
-    return {
-      message: "Missing required fields: ownerName, mobileNumber, bikeNumber, bikeModel, entryDate, cnic (optional), address (optional), notes (optional)",
-    };
+    throw new Error("Missing required fields: ownerName, mobileNumber, bikeNumber, bikeModel, entryDate, cnic (optional), address (optional), notes (optional)");
   }
   // Optionally ensure unique bikeNumber
   const exists = await CustomerModel.findOne({ bikeNumber: payload.bikeNumber }).lean();
   if (exists){
-    return {
-      message: "Customer with this bikeNumber already exists"
-    };
+    throw new Error("Customer with this bikeNumber already exists");
   };
 
   return CustomerModel.create(payload);
@@ -24,29 +20,31 @@ export async function createCustomer(payload: Partial<ICustomer>) {
 export async function updateCustomer(id: string, changes: Partial<ICustomer>) {
   const updated = await CustomerModel.findByIdAndUpdate(id, changes, { new: true }).lean();
   if (!updated){
-    return {
-      message: "Customer not found"
-    };
+    throw new Error("Customer not found");
   };
   return updated;
 }
 
 export async function getCustomerById(id: string) {
   if (!Types.ObjectId.isValid(id)) {
-    return {
-      message: "Invalid id"
-    };
+    throw new Error("Invalid id");
   };
-  return CustomerModel.findById(id).lean();
+  const customer = await CustomerModel.findById(id).lean();
+  if (!customer) {
+    throw new Error("Customer not found");
+  }
+  return customer;
 }
 
 export async function deleteCustomer(id: string) {
   if (!Types.ObjectId.isValid(id)) {
-    return {
-      message: "Invalid id"
-    };
+    throw new Error("Invalid id");
   };
-  return CustomerModel.findByIdAndDelete(id).lean();
+  const deleted = await CustomerModel.findByIdAndDelete(id).lean();
+  if (!deleted) {
+    throw new Error("Customer not found");
+  }
+  return deleted;
 }
 
 /**

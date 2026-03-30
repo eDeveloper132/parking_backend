@@ -1,7 +1,6 @@
 import express from 'express';
-import { createFee, markPaid, monthly } from '../controllers/feeController.js';
+import { createFee, markPaid, monthly, deleteFee } from '../controllers/feeController.js';
 import { requireAuth, requireRole } from '../middlewares/auth-middleware.mjs';
-import { deleteFee } from '../services/feeservice.js';
 
 const router = express.Router();
 

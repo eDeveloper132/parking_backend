@@ -1,7 +1,6 @@
 import express from 'express';
-import { loginAdmin, registerAdmin } from '../controllers/adminController.js';
+import { loginAdmin, registerAdmin, deleteAdmin } from '../controllers/adminController.js';
 import { requireAuth, requireRole } from '../middlewares/auth-middleware.mjs';
-import { deleteAdmin } from '../services/adminservice.js';
 
 const router = express.Router();
 

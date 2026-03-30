@@ -13,7 +13,7 @@ A specialized Node.js/TypeScript backend for managing bike parking facilities. I
   - **Authentication:** JWT (JSON Web Tokens) and Bcrypt for password hashing
   - **Middleware:** `cors`, `cookie-parser`, `express-async-handler`
   - **Logging/CLI:** `chalk`
-
+gemini --resume '2c50145b-8dd3-417a-9e93-a64d90b3b36e'
 ## Architecture
 
 The project follows a modular **Routes-Controllers-Services-Models (RCSM)** architecture:
