@@ -22,7 +22,11 @@ connectDB().catch((err) => {
 });
 
 app.get("/", (req: Request, res: Response) => {
-    res.json({ message: "Welcome to the Bike Parking Management Server!" });
+    res.json({ 
+        success: true,
+        message: "Welcome to the Bike Parking Management Server!",
+        data: {}
+    });
 });
 
 app.use("/api/admin", adminRoutes);
