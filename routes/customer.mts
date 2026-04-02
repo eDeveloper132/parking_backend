@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from '../middlewares/auth-middleware.mjs';
 
 const router = express.Router();
 
-router.post("/", createCustomer);
+router.post("/", requireAuth, requireRole("admin","manager"),createCustomer);
 router.delete("/:id", requireAuth, requireRole("admin"), deleteCustomer);
 router.get("/:id", getCustomer);
 router.put("/:id", updateCustomer);
